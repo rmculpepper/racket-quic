@@ -4,6 +4,14 @@
 (provide (protect-out (all-defined-out)))
 
 ;; ============================================================
+;; Util
+
+(define (tag-malloc tag . args)
+  (define obj (apply malloc args))
+  (cpointer-push-tag! obj tag)
+  obj)
+
+;; ============================================================
 
 (define-ffi-definer define-ng
   (ffi-lib "libngtcp2" '("0" #f)#:fail (lambda () #f))
@@ -166,10 +174,9 @@
 (define _ngtcp2_vec* _ngtcp2_vec-pointer/null)
 
 (define-ng ngtcp2_cid_init
-  (_fun (cid data) ::
-        (cid : _ngtcp2_cid*)
-        (data : _bytes)
-        (_size = (bytes-length data))
+  (_fun [cid : _ngtcp2_cid*]
+        [data : _bytes]
+        [datalen : _size = (bytes-length data)]
         -> _void))
 
 (define-cstruct _ngtcp2_pkt_hd
@@ -2593,3 +2600,5 @@ int ngtcp2_crypto_update_key(
 
 (define-ngc ngtcp2_crypto_delete_crypto_aead_ctx_cb _fpointer)
 (define-ngc ngtcp2_crypto_delete_crypto_cipher_ctx_cb _fpointer)
+
+(define-ngc ngtcp2_crypto_get_path_challenge_data_cb _fpointer)
